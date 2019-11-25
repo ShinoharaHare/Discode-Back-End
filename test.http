@@ -1,0 +1,54 @@
+@url=http://localhost:3000
+@json=Content-Type: application/json
+
+@admin=http://localhost:3000/admin
+@login=http://localhost:3000/api/login
+@register=http://localhost:3000/api/register
+@message=http://localhost:3000/api/message
+
+################################
+get {{admin}}/users
+
+###############################
+get {{admin}}/removeAllUsers
+
+###############################
+post {{register}}
+{{json}}
+
+{
+    "username": "test",
+    "hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "email": "test@test"
+}
+
+###############################
+post {{login}}
+{{json}}
+
+{
+    "username": "test",
+    "hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+}
+
+################################
+post {{register}}
+{{json}}
+
+{
+    "username": "ShinoharaHare",
+    "hash": "9f7fbc80f701e37579dbabee1431887524924a76e94ffdfc1261e5a52c6bddbc",
+    "email": "anna.shiker1822@gmail.com"
+}
+
+###############################
+post {{login}}
+{{json}}
+
+{
+    "username": "ShinoharaHare",
+    "hash": "9f7fbc80f701e37579dbabee1431887524924a76e94ffdfc1261e5a52c6bddbc"
+}
+
+###############################
+get {{message}}

@@ -1,0 +1,30 @@
+{
+    "name": "discode-back-end",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www",
+        "preinstall": "npm command -v link-module-alias && link-module-alias clean || true",
+        "postinstall": "link-module-alias"
+    },
+    "dependencies": {
+        "connect-history-api-fallback": "latest",
+        "link-module-alias": "latest",
+        "socket.io": "latest",
+        "body-parser": "latest",
+        "jsonwebtoken": "latest",
+        "mongoose": "latest",
+        "uuid": "latest",
+        "cookie-parser": "~1.4.4",
+        "debug": "~2.6.9",
+        "express": "~4.16.1",
+        "http-errors": "~1.6.3",
+        "morgan": "~1.9.1",
+        "pug": "2.0.0-beta11"
+    },
+    "_moduleAliases": {
+        "@common": "common",
+        "@socket": "socket",
+        "@routes": "routes"
+    }
+}
