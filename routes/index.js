@@ -1,7 +1,6 @@
 const path = require('path');
 
 const router = require('express').Router();
-const jwt = require('jsonwebtoken');
 
 const { loginRequired } = require('@common/middlewares');
 
