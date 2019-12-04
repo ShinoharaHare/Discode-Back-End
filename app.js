@@ -21,8 +21,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // 路由
-app.use('/api', require('@routes/api'));
 app.use('/', require('@routes/index'));
+app.use('/api', require('@routes/api'));
 
 // 必須在這個位置
 app.use(history());
