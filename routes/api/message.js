@@ -6,12 +6,13 @@ router.use(auth);
 
 //用來獲得某頻道的歷史訊息
 router.get('/', (req, res) => {
-    // res.json({
-    //     success: true,
-    //     messages: [{ 
+    res.json({
+        success: true,
+        username: req.user.username,
+        messages: [{ 
             
-    //     }]
-    // });
+        }]
+    });
 });
 
 //用來發送某頻道的訊息

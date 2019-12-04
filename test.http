@@ -1,27 +1,19 @@
-@url=http://localhost:3000
+@base=http://localhost:3000
+@api={{base}}/api
 @json=Content-Type: application/json
+@manager={{api}}/manager
+@login={{api}}/member/login
+@register={{api}}/member/register
+@message={{api}}/message
 
-@admin=http://localhost:3000/admin
-@login=http://localhost:3000/api/login
-@register=http://localhost:3000/api/register
-@message=http://localhost:3000/api/message
 
-################################
-get {{admin}}/users
-
-###############################
-get {{admin}}/removeAllUsers
-
-###############################
 post {{register}}
 {{json}}
 
 {
     "username": "test",
-    "hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
-    "email": "test@test"
+    "hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 }
-
 ###############################
 post {{login}}
 {{json}}
@@ -30,17 +22,14 @@ post {{login}}
     "username": "test",
     "hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 }
-
 ################################
 post {{register}}
 {{json}}
 
 {
     "username": "ShinoharaHare",
-    "hash": "9f7fbc80f701e37579dbabee1431887524924a76e94ffdfc1261e5a52c6bddbc",
-    "email": "anna.shiker1822@gmail.com"
+    "hash": "9f7fbc80f701e37579dbabee1431887524924a76e94ffdfc1261e5a52c6bddbc"
 }
-
 ###############################
 post {{login}}
 {{json}}
@@ -49,6 +38,21 @@ post {{login}}
     "username": "ShinoharaHare",
     "hash": "9f7fbc80f701e37579dbabee1431887524924a76e94ffdfc1261e5a52c6bddbc"
 }
-
 ###############################
 get {{message}}
+###############################
+
+post {{manager}}/createPublicChannel
+{{json}}
+
+{
+    "name": "1"
+}
+###############################
+
+post {{manager}}/removeChannel
+{{json}}
+
+{
+    "id": "5de557baaecb905e805a7c4a"
+}

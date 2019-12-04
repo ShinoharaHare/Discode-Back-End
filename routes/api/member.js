@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('@common/config');
 const router = require('express').Router();
 const { User } = require('@common/models');
+const error = require('@common/error');
 
 const expires = 60 * 60 * 24 * 30;
 
@@ -10,25 +11,26 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
         if (!user) {
-            throw { msg: '找不到此用戶' };
+            throw error.UserNotFoundError;
         }
 
         if (user.hash != req.body.hash) {
-            throw { msg: '密碼錯誤' };
+            throw error.PasswordInvalidError;
         }
 
         const token = generateToken(user);
-        res.status(200).cookie('token', token, { expires: new Date(Date.now() + 1000 * expires) }).json({
-            success: true,
-            msg: '登入成功',
-            token: token
-        });
+
+        res = res.status(200);
+        res = res.cookie('token', token, { expires: new Date(Date.now() + 1000 * expires) });
+        res.json({ success: true, msg: '登入成功', token: token });
 
     } catch (err) {
         console.log(err);
-        res.status(401).json({
+
+        res = res.status(401);
+        res.json({
             success: false,
-            msg: err.msg || '未知的錯誤'
+            error: err instanceof Error ? error.UnknownError : err
         });
     }
 });
@@ -38,22 +40,33 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             username: req.body.username,
             hash: req.body.hash,
-            email: req.body.email
+            // email: req.body.email
         });
 
         const token = generateToken(user);
-        res.status(200).cookie('token', token, { expires: new Date(Date.now() + 1000 * expires) }).json({
-            success: true,
-            msg: '註冊成功',
-            token: token
-        });
+        res = res.status(200);
+        res = res.cookie('token', token, { expires: new Date(Date.now() + 1000 * expires) });
+        res.json({ success: true, msg: '註冊成功', token: token });
+        fs.mkdirSync(path.join(__dirname, '../..', `/content/user/${user.id}`));
 
     } catch (err) {
         console.log(err);
-        res.status(401).json({
+
+        var obj = {
             success: false,
-            msg: '註冊失敗'
-        });
+        }
+
+        res = res.status(401);
+        switch (err.code) {
+            case 11000:
+                obj.error = error.UsernameDuplicateError;
+                break;
+
+            default:
+                obj.error = error.UnknownError;
+        }
+
+        res.json(obj);
     }
 });
 
@@ -62,7 +75,7 @@ function generateToken(user) {
     const payload = {
         id: user.id,
         username: user.username,
-        email: user.email
+        // email: user.email
     };
 
     return jwt.sign(payload, config.secret, { expiresIn: expires });

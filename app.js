@@ -23,12 +23,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // 路由
 app.use('/api', require('@routes/api'));
 
+
 // 必須在這個位置
 app.use(history());
 
 // 靜態檔案
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static('../Discode-Front-End/dist'));
+app.use('/content', express.static(path.join(__dirname, 'content')));
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
