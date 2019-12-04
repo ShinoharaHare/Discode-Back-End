@@ -34,6 +34,21 @@ async function auth(req, res, next) {
     }
 }
 
+async function loginRequired(req, res, next) {
+    try {
+        const token = req.cookies.token;
+        const decoded = jwt.verify(token, config.secret);
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            throw new Error();
+        }
+        next();
+    } catch (err) {
+        res.redirect('/member');
+    }
+}
+
 module.exports = {
-    auth
+    auth,
+    loginRequired
 };
