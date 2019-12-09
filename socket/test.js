@@ -1,4 +1,4 @@
-module.exports = (io) => {
+function func(io) {
     io.on('connection', (socket) => {
         //Code here
         socket.on('test', (data) => {
@@ -8,3 +8,5 @@ module.exports = (io) => {
         });
     });
 }
+
+module.exports = func;

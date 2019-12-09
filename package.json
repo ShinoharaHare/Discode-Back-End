@@ -8,6 +8,8 @@
         "postinstall": "link-module-alias"
     },
     "dependencies": {
+        "mime": "latest",
+        "socket.io-cookie-parser": "latest",
         "connect-history-api-fallback": "latest",
         "link-module-alias": "latest",
         "socket.io": "latest",

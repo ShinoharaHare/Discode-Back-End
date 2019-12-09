@@ -39,13 +39,12 @@ const MessageSchema = mongoose.Schema({
         filename: String,
         id: String,
         size: Number,
-        url: String
     }],
     author: {
         type: String,
         required: true
     },
-    channelId: {
+    channel: {
         type: String,
         required: true
     },
