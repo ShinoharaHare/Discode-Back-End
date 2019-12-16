@@ -7,7 +7,7 @@ const error = {
     TokenExpiredError: '過期的Token',
     // 登入
     UserNotFoundError: '找不到此用戶',
-    PasswordInvalidError: '密碼錯誤',
+    PasswordIncorrectError: '密碼錯誤',
     // 註冊
     UsernameDuplicateError: '用戶名已存在'
 };

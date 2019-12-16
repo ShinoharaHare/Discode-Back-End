@@ -12,10 +12,10 @@ async function auth(req, res, next) {
         req.user = await User.findById(decoded.id);
         next();
     } catch (err) {
+        console.log(err);
         var obj = {
             success: false,
         }
-        console.log(err);
         res = res.status(403);
         switch (err.message) {
             case 'jwt must be provided':

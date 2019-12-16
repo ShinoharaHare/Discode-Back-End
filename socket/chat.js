@@ -1,10 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const uuidv4 = require('uuid/v4');
-
 // const { isMember } = require('@common/middlewares-io');
 const { Channel } = require('@common/models');
-
+const fileWriter = require('@common/file-writer');
 
 function func(io) {
     io.on('connection', async (socket) => {
@@ -21,16 +17,15 @@ function func(io) {
             var attachments = [];
 
             for (let file of msg.files) {
-                const id = uuidv4();
-                fs.writeFileSync(path.resolve(`content/channel/${msg.channel}/${id}.`), file.data);
+                const id = fileWriter.write(file, { channel: msg.channel })
                 attachments.push({
                     id: id,
-                    filename: file.name,                    
+                    filename: file.name,
                     size: file.size,
                     type: file.type
                 });
             }
-            
+
             io.to(msg.channel).emit('message', {
                 channel: msg.channel,
                 author: {

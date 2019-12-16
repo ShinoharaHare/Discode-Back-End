@@ -1,4 +1,3 @@
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const config = require('@common/config');
@@ -16,7 +15,7 @@ router.post('/login', async (req, res) => {
         }
 
         if (user.hash != req.body.hash) {
-            throw error.PasswordInvalidError;
+            throw error.PasswordIncorrectError;
         }
 
         const token = generateToken(user);
@@ -48,8 +47,6 @@ router.post('/register', async (req, res) => {
         res = res.status(200);
         res = res.cookie('token', token, { expires: new Date(Date.now() + 1000 * expires) });
         res.json({ success: true, msg: '註冊成功', token: token });
-        fs.mkdirSync(path.join(__dirname, '../..', `/content/user/${user.id}`));
-
     } catch (err) {
         console.log(err);
 
