@@ -48,36 +48,55 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/upload/:item', auth, async (req, res) => {
+router.post('/upload', auth, async (req, res) => {
     try {
-        switch (req.params.item) {
-            case 'avatar':
-                var file = req.files.avatar;
-                var id = fileWriter.write(file, { user: req.user.id });
-                res.json({
-                    success: true,
-                    data: {
-                        id: id
-                    }
-                });
-                break;
-        }
+        var file = req.files.avatar;
+        var id = fileWriter.write(file, { user: req.user.id });
+        res.json({
+            success: true,
+            data: { id: id }
+        });
     } catch (err) {
         console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
     }
 });
 
 router.post('/edit', auth, async (req, res) => {
     try {
-        if (req.body.hash != req.user.hash) {
-            throw error.PasswordIncorrectError;
-        }
-        const user = await User.findByIdAndUpdate(req.user.id, {
-            username: req.body.username,
-            nickname: req.body.nickname,
-            avatar: req.body.avatar
+        var user = await User.findByIdAndUpdate(req.user.id, req.body);
+        res.json({
+            success: true,
+            data: Object.assign({
+                id: user.id,
+                username: user.username,
+                nickname: user.nickname,
+                avatar: user.avatar
+            }, req.body)
         });
+    } catch (err) {
+        console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
+    }
+});
 
+router.post('/edit/:item', auth, async (req, res) => {
+    try {
+        var user;
+        switch (req.params.item) {
+            case 'password':
+                if (req.body.currentHash != req.user.hash) {
+                    throw error.PasswordIncorrectError;
+                }
+                user = await User.findByIdAndUpdate(req.user.id, { hash: req.body.hash });
+                break
+        }
         res.json({
             success: true,
             data: {
