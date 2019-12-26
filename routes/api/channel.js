@@ -30,6 +30,10 @@ router.get('/', async (req, res) => {
 
     } catch (err) {
         console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
     }
 });
 
@@ -56,25 +60,56 @@ router.get('/:channel/members', async (req, res) => {
 
     } catch (err) {
         console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
     }
 });
 
 router.get('/:channel/messages', async (req, res) => {
     try {
-        const data = await Message.find({ channel: req.params.channel });
+        const limit = Number(req.query.limit) || 50;
+        const data = await Message.find({ channel: req.params.channel }).limit(limit);
+        var messages = [];
+
+        for (let msg of data) {
+            messages.push({
+                id: msg.id,
+                channel: msg.channel,
+                author: await getAuthorInfo(msg.author),
+                content: msg.content,
+                attachments: msg.attachments,
+                code: msg.code
+            });
+        }
+
         res.json({
             success: true,
-            data: [
-                {
-                    author: { name: '測試人員' },
-                    content: `在ID為${req.params.channel}的頻道發話`
-                }
-            ]
+            data: messages
         });
     } catch (err) {
         console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
     }
 });
+
+async function getAuthorInfo(id) {
+    this.cahched = this.cahched || {};
+    try {
+        const user = this.cahched[id] || await User.findById(id);
+        return {
+            id: user.id,
+            name: user.nickname || user.username,
+            avatar: user.avatar
+        };
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 module.exports = {
     path: 'channel',

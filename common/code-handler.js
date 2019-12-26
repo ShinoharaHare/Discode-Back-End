@@ -1,15 +1,14 @@
-const path = require('path');
-const fs = require('fs');
+const { cpp, node, python, java } = require('compile-run');
 
-const languages = {};
+const languages = {
+    'python': python,
+    'c_cpp': cpp,
+    'javascript': node,
+    'java': java
+};
 
-    const obj = require(path.resolve(`handler/code/${path_}`));
-    languages[obj.language] = obj;
+function run(language, code, stdin) {
+    return languages[language].runSource(code, { stdin: stdin });
 }
-
-function run(language, file, input) {
-    return languages[language].run(file, input);
-}
-
 
 module.exports = run;

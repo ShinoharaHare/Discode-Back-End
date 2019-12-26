@@ -18,11 +18,6 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    // email: {
-    //     type: String,
-    //     unique: true,
-    //     required: true
-    // },
     nickname: {
         type: String,
         default: null
@@ -34,12 +29,6 @@ const UserSchema = mongoose.Schema({
 });
 
 const MessageSchema = mongoose.Schema({
-    attachments: [{
-        type: String, //可能會有問題
-        filename: String,
-        id: String,
-        size: Number,
-    }],
     author: {
         type: String,
         required: true
@@ -48,31 +37,21 @@ const MessageSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    embeds: [{
-        type: String,
-        title: String,
-        description: String,
-        url: String,
-        author: {
-            name: String,
-            url: String
-        },
-        provider: {
-            name: String,
-            url: String
-        },
-        thumbnail: {
-            url: String,
-            width: Number,
-            height: Number
-        },
-        video: {
-            url: String,
-            width: Number,
-            height: Number
-        }
-    }]
-},{
+    content: String,
+    attachments: [{
+        filetype: String,
+        filename: String,
+        id: String,
+        size: Number,
+    }],
+    code: {
+        language: String,
+        content: String,
+        stdin: String,
+        stdout: String,
+        stderr: String
+    },
+}, {
     timestamps: {
         createdAt: 'timestamp',
         updatedAt: 'editedTimestamp'

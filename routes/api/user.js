@@ -50,7 +50,9 @@ router.get('/:id', async (req, res) => {
 
 router.post('/upload', auth, async (req, res) => {
     try {
-        var file = req.files.avatar;
+        var file = req.files.file;
+        file.filename = file.name;
+        
         var id = fileWriter.write(file, { user: req.user.id });
         res.json({
             success: true,

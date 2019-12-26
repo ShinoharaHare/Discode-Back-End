@@ -8,6 +8,7 @@
         "postinstall": "link-module-alias"
     },
     "dependencies": {
+        "compile-run": "latest",
         "express-fileupload": "latest",
         "md5": "latest",
         "socket.io-cookie-parser": "latest",

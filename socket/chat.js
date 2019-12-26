@@ -1,6 +1,4 @@
-const path = require('path');
-
-const { Channel } = require('@common/models');
+const { Channel, Message, User } = require('@common/models');
 const fileWriter = require('@common/file-writer');
 const runCode = require('@common//code-handler');
 
@@ -12,14 +10,32 @@ function func(io) {
                 { 'members.id': socket.user.id }
             ]
         });
+
         for (let channel of channels) {
             socket.join(channel.id);
         }
+
         socket.on('message', async (msg) => {
-            var attachments = resolveAttachment(msg);
-            var code = await resolveCode(msg);
+            var attachments, code;
+            switch (msg.type) {
+                case 'attachment':
+                    attachments = resolveAttachments(msg);
+                    break;
+                case 'code':
+                    code = await resolveCode(msg);
+                    break;
+            }
+
+            const message = await Message.create({
+                author: socket.user.id,
+                channel: msg.channel,
+                content: msg.content,
+                attachments: attachments,
+                code: code
+            });
 
             io.to(msg.channel).emit('message', {
+                id: message.id,
                 channel: msg.channel,
                 author: {
                     id: socket.user.id,
@@ -35,15 +51,15 @@ function func(io) {
     });
 }
 
-function resolveAttachment(msg) {
+function resolveAttachments(msg) {
     var attachments = [];
     for (let file of msg.files) {
         const id = fileWriter.write(file, { channel: msg.channel })
         attachments.push({
             id: id,
-            filename: file.name,
-            size: file.size,
-            type: file.type
+            filename: file.filename,
+            filetype: file.filetype,
+            size: file.size
         });
     }
 
@@ -55,17 +71,16 @@ async function resolveCode(msg) {
     var code = {
         language: msg.code.language,
         content: msg.code.content,
-        input: msg.code.input,
+        stdin: msg.code.stdin,
         stdout: '',
         stderr: ''
     };
 
-    const id = fileWriter.write({ name: '', data: code.content }, { channel: msg.channel });
-    
-    var output = await runCode(code.language, path.resolve(`content/channel/${msg.channel}/${id}`), code.input);
-    code.stdout = output[0];
-    code.stderr = output[1];
-    console.log(code);
+    var result = await runCode(code.language, code.content, code.stdin);
+
+    code.stdout = result.stdout;
+    code.stderr = result.stderr;
+
     return code;
 }
 

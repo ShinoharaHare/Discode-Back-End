@@ -26,8 +26,6 @@ router.post('/login', async (req, res) => {
 
     } catch (err) {
         console.log(err);
-
-        res = res.status(401);
         res.json({
             success: false,
             error: err instanceof Error ? error.UnknownError : err
@@ -54,7 +52,6 @@ router.post('/register', async (req, res) => {
             success: false,
         }
 
-        res = res.status(401);
         switch (err.code) {
             case 11000:
                 obj.error = error.UsernameDuplicateError;
