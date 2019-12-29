@@ -5,5 +5,4 @@ module.exports = {
             return target[name];
         }
     })
-
 }

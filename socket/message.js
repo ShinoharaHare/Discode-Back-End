@@ -25,15 +25,11 @@ module.exports = (io) => {
                 code: code
             });
 
-            io.to(msg.channel).emit('message', {
+            io.to(message.channel).emit('message', {
                 id: message.id,
-                channel: msg.channel,
-                author: {
-                    id: socket.user.id,
-                    name: socket.user.nickname || socket.user.username,
-                    avatar: socket.user.avatar
-                },
-                content: msg.content,
+                channel: message.channel,
+                author: message.author,
+                content: message.content,
                 attachments: attachments,
                 code: code
             });

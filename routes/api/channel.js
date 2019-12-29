@@ -25,22 +25,10 @@ router.get('/', async (req, res) => {
                 messages.push({
                     id: message.id,
                     channel: message.channel,
-                    author: await getAuthorInfo(message.author),
+                    author: message.author,
                     content: message.content,
                     attachments: message.attachments,
                     code: message.code
-                });
-            }
-
-            const memberIds = channel.public ? Array.from(publicChannelMembers[channel.id]) : channel.members.map((m) => m.id);
-            const memberDocs = await User.find({ '_id': { $in: memberIds } });
-            const members = [];
-            for (const member of memberDocs) {
-                members.push({
-                    username: member.username,
-                    nickname: member.nickname,
-                    avatar: member.avatar,
-                    message: member.message
                 });
             }
 
@@ -49,7 +37,7 @@ router.get('/', async (req, res) => {
                 name: channel.name,
                 icon: channel.icon,
                 messages: messages,
-                members: members
+                members: channel.public ? Array.from(publicChannelMembers[channel.id]) : channel.members.map((m) => m.id)
             });
         }
 
@@ -108,7 +96,7 @@ router.get('/:channel/messages', async (req, res) => {
             messages.push({
                 id: msg.id,
                 channel: msg.channel,
-                author: await getAuthorInfo(msg.author),
+                author: msg.author,
                 content: msg.content,
                 attachments: msg.attachments,
                 code: msg.code
@@ -170,20 +158,6 @@ router.get('/:channel/edit', async (req, res) => {
     }
 });
 
-
-async function getAuthorInfo(id) {
-    this.cahched = this.cahched || {};
-    try {
-        const user = this.cahched[id] || await User.findById(id);
-        return {
-            id: user.id,
-            name: user.nickname || user.username,
-            avatar: user.avatar
-        };
-    } catch (err) {
-        console.log(err);
-    }
-}
 
 module.exports = {
     path: 'channel',

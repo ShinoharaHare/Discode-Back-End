@@ -28,10 +28,11 @@ router.get('/', auth, (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const user = User.findById(req.params.id);
+        const user = await User.findById(req.params.id);
         if (!user) {
             throw error.UserNotFoundError;
         }
+
         res.json({
             success: true,
             data: {
