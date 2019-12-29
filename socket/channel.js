@@ -14,6 +14,11 @@ module.exports = (io) => {
         for (let channel of channels) {
             if (channel.public) {
                 publicChannelMembers[channel.id].add(socket.user.id);
+
+                socket.broadcast.emit('newMember', {
+                    channel: channel.id,
+                    user: socket.user.id
+                });
             }
             socket.join(channel.id);
         }
@@ -21,12 +26,16 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             for (let id in publicChannelMembers) {
                 publicChannelMembers[id].delete(socket.user.id);
+
+                io.emit('removeMember', {
+                    channel: id,
+                    user: socket.user.id
+                });
             }
         });
 
         socket.on('createChannel', async (data) => {
             try {
-
                 const ch = await Channel.create({
                     name: data.name,
                     icon: data.icon,

@@ -80,7 +80,10 @@ const ChannelSchema = mongoose.Schema({
     icon: String,
     members: {
         type: [{
-            id: String,
+            id: {
+                type: String,
+                unique: true
+            },
             level: {
                 type: Number,
                 default: 0
