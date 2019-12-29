@@ -38,7 +38,6 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             username: req.body.username,
             hash: req.body.hash,
-            // email: req.body.email
         });
 
         const token = generateToken(user);
@@ -70,7 +69,6 @@ function generateToken(user) {
     const payload = {
         id: user.id,
         username: user.username,
-        // email: user.email
     };
 
     return jwt.sign(payload, config.secret, { expiresIn: expires });

@@ -6,7 +6,8 @@ const { auth } = require('@common/middlewares-io');
 io.use(cookieParser());
 io.use(auth);
 
-require('./chat')(io);
-
+require('./user')(io);
+require('./message')(io);
+require('./channel')(io);
 
 module.exports = io;

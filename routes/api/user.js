@@ -1,8 +1,9 @@
 const router = require('express').Router();
+
 const { auth } = require('@common/middlewares');
 const { User } = require('@common/models');
 const error = require('@common/error');
-const fileWriter = require('@common/file-writer');
+
 
 router.get('/', auth, (req, res) => {
     try {
@@ -12,7 +13,8 @@ router.get('/', auth, (req, res) => {
                 id: req.user.id,
                 username: req.user.username,
                 nickname: req.user.nickname,
-                avatar: req.user.avatar
+                avatar: req.user.avatar,
+                message: req.user.message
             }
         });
     } catch (err) {
@@ -36,27 +38,9 @@ router.get('/:id', async (req, res) => {
                 id: user.id,
                 username: user.username,
                 nickname: user.nickname,
-                avatar: user.avatar
+                avatar: user.avatar,
+                message: user.message
             }
-        });
-    } catch (err) {
-        console.log(err);
-        res.json({
-            success: false,
-            error: err instanceof Error ? error.UnknownError : err
-        });
-    }
-});
-
-router.post('/upload', auth, async (req, res) => {
-    try {
-        var file = req.files.file;
-        file.filename = file.name;
-        
-        var id = fileWriter.write(file, { user: req.user.id });
-        res.json({
-            success: true,
-            data: { id: id }
         });
     } catch (err) {
         console.log(err);
@@ -69,15 +53,22 @@ router.post('/upload', auth, async (req, res) => {
 
 router.post('/edit', auth, async (req, res) => {
     try {
-        var user = await User.findByIdAndUpdate(req.user.id, req.body);
+        Object.assign(req.user, {
+            nickname: req.body.nickname,
+            avatar: req.body.avatar,
+            message: req.body.message
+        });
+
+        const user = await req.user.save();
+        
         res.json({
             success: true,
-            data: Object.assign({
+            data: {
                 id: user.id,
                 username: user.username,
                 nickname: user.nickname,
                 avatar: user.avatar
-            }, req.body)
+            }
         });
     } catch (err) {
         console.log(err);
@@ -90,22 +81,34 @@ router.post('/edit', auth, async (req, res) => {
 
 router.post('/edit/:item', auth, async (req, res) => {
     try {
-        var user;
         switch (req.params.item) {
             case 'password':
                 if (req.body.currentHash != req.user.hash) {
                     throw error.PasswordIncorrectError;
                 }
-                user = await User.findByIdAndUpdate(req.user.id, { hash: req.body.hash });
+                req.user.hash = req.body.hash;
                 break
+            case 'avatar':
+                req.user.avatar = req.body.avatar;
+                break;
+            case 'nickname':
+                req.user.nickname = req.body.nickname;
+                break;
+            case 'message':
+                req.user.message = req.body.message;
+                break;
         }
+
+        const user = await req.user.save();
+
         res.json({
             success: true,
             data: {
                 id: user.id,
                 username: user.username,
                 nickname: user.nickname,
-                avatar: user.avatar
+                avatar: user.avatar,
+                message: user.message
             }
         });
     } catch (err) {

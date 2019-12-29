@@ -5,8 +5,8 @@ const md5 = require('md5');
 
 function write(file, location) {
     const hash = file.md5 || md5(file.data);
-    const id = hash + path.extname(file.filename);
-    var dir = path.resolve(`content/${Object.keys(location)[0]}/${Object.values(location)[0]}`);
+    const id = hash + path.extname(file.name);
+    var dir = path.resolve(`content/${location}`);
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }

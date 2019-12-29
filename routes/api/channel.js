@@ -1,25 +1,55 @@
 const router = require('express').Router();
 
+const error = require('@common/error');
 const { auth } = require('@common/middlewares');
 const { User, Channel, Message } = require('@common/models');
+const { publicChannelMembers } = require('@common/globals');
 
 router.use(auth);
 
 router.get('/', async (req, res) => {
     try {
-        const data = await Channel.find({
+        const channelDocs = await Channel.find({
             $or: [
                 { public: true },
                 { 'members.id': req.user.id }
             ]
         });
+
         const channels = [];
-        for (let d of data) {
+        for (let channel of channelDocs) {
+            const MessageDocs = await Message.find({ channel: channel.id }).limit(50);
+            const messages = [];
+
+            for (let message of MessageDocs) {
+                messages.push({
+                    id: message.id,
+                    channel: message.channel,
+                    author: await getAuthorInfo(message.author),
+                    content: message.content,
+                    attachments: message.attachments,
+                    code: message.code
+                });
+            }
+
+            const memberIds = channel.public ? Array.from(publicChannelMembers[channel.id]) : channel.members.map((m) => m.id);
+            const memberDocs = await User.find({ '_id': { $in: memberIds } });
+            const members = [];
+            for (const member of memberDocs) {
+                members.push({
+                    username: member.username,
+                    nickname: member.nickname,
+                    avatar: member.avatar,
+                    message: member.message
+                });
+            }
+
             channels.push({
-                id: d.id,
-                name: d.name,
-                icon: d.icon,
-                members: d.members
+                id: channel.id,
+                name: channel.name,
+                icon: channel.icon,
+                messages: messages,
+                members: members
             });
         }
 
@@ -41,22 +71,23 @@ router.get('/:channel/members', async (req, res) => {
     try {
         const channel = await Channel.findById(req.params.channel);
         const memberIds = channel.members.map((m) => m.id);
-        const members = await User.find({ '_id': { $in: memberIds } });
+        const doc = await User.find({ '_id': { $in: memberIds } });
 
-        var obj = {
-            success: true,
-            data: []
-        };
+        var members = [];
 
-        for (const member of members) {
-            obj.data.push({
+        for (const member of doc) {
+            members.push({
                 username: member.username,
                 nickname: member.nickname,
-                avatar: member.avatar
+                avatar: member.avatar,
+                message: member.message
             });
         }
-        
-        res.json(obj);
+
+        res.json({
+            success: true,
+            data: members
+        });
 
     } catch (err) {
         console.log(err);
@@ -96,6 +127,49 @@ router.get('/:channel/messages', async (req, res) => {
         });
     }
 });
+
+router.post('/create', async (req, res) => {
+    try {
+        const channel = await Channel.create({
+            name: req.body.name,
+            icon: req.body.icon,
+            public: req.body.public
+        });
+
+        res.json({
+            success: true,
+            data: {
+                id: channel.id,
+                name: channel.name,
+                channel: channel.icon,
+                public: channel.public
+            }
+        });
+    } catch (err) {
+        console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
+    }
+});
+
+
+router.get('/:channel/edit', async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            data: {}
+        });
+    } catch (err) {
+        console.log(err);
+        res.json({
+            success: false,
+            error: err instanceof Error ? error.UnknownError : err
+        });
+    }
+});
+
 
 async function getAuthorInfo(id) {
     this.cahched = this.cahched || {};

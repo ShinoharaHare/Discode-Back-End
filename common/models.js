@@ -20,11 +20,15 @@ const UserSchema = mongoose.Schema({
     },
     nickname: {
         type: String,
-        default: null
+        default: ''
     },
     avatar: {
         type: String,
-        default: null
+        default: ''
+    },
+    message: {
+        type: String,
+        default: ''
     }
 });
 
@@ -38,12 +42,24 @@ const MessageSchema = mongoose.Schema({
         required: true
     },
     content: String,
-    attachments: [{
-        filetype: String,
-        filename: String,
-        id: String,
-        size: Number,
-    }],
+    attachments: {
+        images: {
+            type: [{
+                id: String,
+                name: String,
+                size: Number
+            }],
+            default: []
+        },
+        files: {
+            type: [{
+                id: String,
+                name: String,
+                size: Number
+            }],
+            default: []
+        }
+    },
     code: {
         language: String,
         content: String,
@@ -62,13 +78,16 @@ const MessageSchema = mongoose.Schema({
 const ChannelSchema = mongoose.Schema({
     name: String,
     icon: String,
-    members: [{
-        id: String,
-        level: {
-            type: Number,
-            default: 0
-        }
-    }],
+    members: {
+        type: [{
+            id: String,
+            level: {
+                type: Number,
+                default: 0
+            }
+        }],
+        default: []
+    },
     public: Boolean
 });
 
