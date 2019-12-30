@@ -24,21 +24,22 @@ module.exports = (io) => {
 
         socket.on('createChannel', async (data) => {
             try {
-                const ch = await Channel.create({
+                const doc = await Channel.create({
                     name: data.name,
                     icon: data.icon,
                     public: data.public,
-                    members: [{ id: socket.user.id }]
+                    members: data.public ? [] : [{ id: socket.user.id }]
                 });
 
                 var channel = {
-                    id: ch.id,
-                    name: ch.name,
-                    icon: ch.icon,
-                    public: ch.public
+                    id: doc.id,
+                    name: doc.name,
+                    icon: doc.icon,
+                    public: doc.public,
+                    members: doc.members
                 };
 
-                if (ch.public) {
+                if (channel.public) {
                     io.emit('newChannel', channel);
                 } else {
                     socket.emit('newChannel', channel);
@@ -54,19 +55,20 @@ module.exports = (io) => {
                 const channelDoc = await Channel.findById(data.channel);
                 const user = await User.findOne({ username: data.username });
 
-                channelDoc.members.push({ id: user.id });
+                if (channelDoc.members.every((x) => x.id != user.id)) {
+                    members.push({ id: user.id });
+                    const channel = await channelDoc.save();
 
-                const channel = await channelDoc.save();
+                    socket.emit('newChannel', {
+                        id: channel.id,
+                        name: channel.name,
+                        icon: channel.icon,
+                        public: channel.public,
+                        members: channel.members
+                    });
 
-                socket.emit('newChannel', {
-                    id: channel.id,
-                    name: channel.name,
-                    icon: channel.icon,
-                    public: channel.public
-                });
-
-                joinRoom(sockets[user.id], channel);
-
+                    joinRoom(sockets[user.id], channel);
+                }
             } catch (err) {
                 console.log(err);
             }
@@ -82,7 +84,7 @@ function joinRoom(socket, channel) {
         socket.join(channel.id);
         socket.broadcast.emit('newMember', {
             channel: channel.id,
-            user: socket.user.id
+            member: { id: socket.user.id }
         });
     }
 }
@@ -94,7 +96,7 @@ function leaveRoom(socket, channel) {
         if (channel.public) {
             socket.io.emit('removeMember', {
                 channel: channel.id,
-                user: socket.user.id
+                member: { id: socket.user.id }
             });
         }
     }

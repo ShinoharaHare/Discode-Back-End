@@ -32,13 +32,23 @@ router.get('/', async (req, res) => {
                 });
             }
 
+            var members;
+            if (channel.public) {
+                members = [];
+                for (let id of onlineUsers[channel.id]) {
+                    members.push({ id: id });
+                }
+            } else {
+                members = channel.members;
+            }
+
             channels.push({
                 id: channel.id,
                 name: channel.name,
                 icon: channel.icon,
                 public: channel.public,
                 messages: messages,
-                members: channel.public ? Array.from(onlineUsers[channel.id]) : channel.members.map((m) => m.id)
+                members: members
             });
         }
 
@@ -59,23 +69,10 @@ router.get('/', async (req, res) => {
 router.get('/:channel/members', async (req, res) => {
     try {
         const channel = await Channel.findById(req.params.channel);
-        const memberIds = channel.members.map((m) => m.id);
-        const doc = await User.find({ '_id': { $in: memberIds } });
-
-        var members = [];
-
-        for (const member of doc) {
-            members.push({
-                username: member.username,
-                nickname: member.nickname,
-                avatar: member.avatar,
-                message: member.message
-            });
-        }
 
         res.json({
             success: true,
-            data: members
+            data: channel.members
         });
 
     } catch (err) {
@@ -147,7 +144,7 @@ router.post('/create', async (req, res) => {
 router.post('/:channel/edit/:item', async (req, res) => {
     try {
         const doc = await Channel.findById(req.params.channel);
-        
+
         switch (req.params.item) {
             case 'name':
                 doc.name = req.body.name;
@@ -156,7 +153,7 @@ router.post('/:channel/edit/:item', async (req, res) => {
                 doc.icon = req.body.icon;
                 break;
         }
-        
+
         const channel = await doc.save();
 
         res.json({
