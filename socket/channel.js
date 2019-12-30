@@ -96,8 +96,6 @@ function leaveRoom(socket, channel) {
                 channel: channel.id,
                 user: socket.user.id
             });
-        } else {
-            sock
         }
     }
 }

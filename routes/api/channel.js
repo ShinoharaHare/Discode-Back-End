@@ -143,11 +143,28 @@ router.post('/create', async (req, res) => {
 });
 
 
-router.get('/:channel/edit', async (req, res) => {
+router.post('/:channel/edit/:item', async (req, res) => {
     try {
+        const doc = await Channel.findById(req.params.channel);
+        
+        switch (req.params.item) {
+            case 'name':
+                doc.name = req.body.name;
+                break;
+            case 'icon':
+                doc.icon = req.body.icon;
+                break;
+        }
+        
+        const channel = await doc.save();
+
         res.json({
             success: true,
-            data: {}
+            data: {
+                id: channel.id,
+                name: channel.name,
+                icon: channel.icon
+            }
         });
     } catch (err) {
         console.log(err);
