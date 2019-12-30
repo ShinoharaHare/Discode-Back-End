@@ -3,7 +3,7 @@ const router = require('express').Router();
 const error = require('@common/error');
 const { auth } = require('@common/middlewares');
 const { User, Channel, Message } = require('@common/models');
-const { publicChannelMembers } = require('@common/globals');
+const { onlineUsers } = require('@common/globals');
 
 router.use(auth);
 
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
                 name: channel.name,
                 icon: channel.icon,
                 messages: messages,
-                members: channel.public ? Array.from(publicChannelMembers[channel.id]) : channel.members.map((m) => m.id)
+                members: channel.public ? Array.from(onlineUsers[channel.id]) : channel.members.map((m) => m.id)
             });
         }
 

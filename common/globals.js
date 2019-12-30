@@ -1,5 +1,5 @@
 module.exports = {
-    publicChannelMembers: new Proxy({}, {
+    onlineUsers: new Proxy({}, {
         get(target, name) {
             target[name] = target[name] || new Set();
             return target[name];
@@ -9,5 +9,6 @@ module.exports = {
         get(target, name) {
             return target[name] || 'offline';
         }
-    })
+    }),
+    sockets: {}
 }

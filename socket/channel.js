@@ -1,5 +1,5 @@
-const { Channel } = require('@common/models');
-const { publicChannelMembers } = require('@common/globals');
+const { User, Channel } = require('@common/models');
+const { onlineUsers, sockets } = require('@common/globals');
 
 module.exports = (io) => {
     io.on('connection', async (socket) => {
@@ -12,25 +12,13 @@ module.exports = (io) => {
         });
 
         for (let channel of channels) {
-            if (channel.public) {
-                publicChannelMembers[channel.id].add(socket.user.id);
-
-                socket.broadcast.emit('newMember', {
-                    channel: channel.id,
-                    user: socket.user.id
-                });
-            }
-            socket.join(channel.id);
+            joinRoom(socket, channel);
         }
 
-        socket.on('disconnect', () => {
-            for (let id in publicChannelMembers) {
-                publicChannelMembers[id].delete(socket.user.id);
-
-                io.emit('removeMember', {
-                    channel: id,
-                    user: socket.user.id
-                });
+        socket.on('disconnect', async () => {
+            for (let id in onlineUsers) {
+                const channel = await Channel.findById(id);
+                leaveRoom(socket, channel);
             }
         });
 
@@ -63,6 +51,21 @@ module.exports = (io) => {
 
         socket.on('invite', async (data) => {
             try {
+                const channelDoc = await Channel.findById(data.channel);
+                const user = await User.findOne({ username: data.username });
+
+                channelDoc.members.push({ id: user.id });
+
+                const channel = await channelDoc.save();
+
+                socket.emit('newChannel', {
+                    id: channel.id,
+                    name: channel.name,
+                    icon: channel.icon,
+                    public: channel.public
+                });
+
+                joinRoom(sockets[user.id], channel);
 
             } catch (err) {
                 console.log(err);
@@ -71,3 +74,30 @@ module.exports = (io) => {
 
     });
 };
+
+
+function joinRoom(socket, channel) {
+    if (socket) {
+        onlineUsers[channel.id].add(socket.user.id);
+        socket.join(channel.id);
+        socket.broadcast.emit('newMember', {
+            channel: channel.id,
+            user: socket.user.id
+        });
+    }
+}
+
+function leaveRoom(socket, channel) {
+    if (socket) {
+        onlineUsers[channel.id].delete(socket.user.id);
+        socket.leave(channel.id);
+        if (channel.public) {
+            socket.io.emit('removeMember', {
+                channel: channel.id,
+                user: socket.user.id
+            });
+        } else {
+            sock
+        }
+    }
+}
