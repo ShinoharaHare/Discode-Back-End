@@ -36,6 +36,7 @@ router.get('/', async (req, res) => {
                 id: channel.id,
                 name: channel.name,
                 icon: channel.icon,
+                public: channel.public,
                 messages: messages,
                 members: channel.public ? Array.from(onlineUsers[channel.id]) : channel.members.map((m) => m.id)
             });
