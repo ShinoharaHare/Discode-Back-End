@@ -40,8 +40,12 @@ module.exports = (io) => {
                 };
 
                 if (channel.public) {
-                    io.emit('newChannel', channel);
+                    for (let id in sockets) {
+                        await joinRoom(sockets[id], channel);
+                        sockets[id].emit('newChannel', channel);
+                    }
                 } else {
+                    await joinRoom(socket, channel);
                     socket.emit('newChannel', channel);
                 }
 
@@ -56,18 +60,18 @@ module.exports = (io) => {
                 const user = await User.findOne({ username: data.username });
 
                 if (channelDoc.members.every((x) => x.id != user.id)) {
-                    members.push({ id: user.id });
+                    channelDoc.members.push({ id: user.id });
                     const channel = await channelDoc.save();
 
-                    socket.emit('newChannel', {
+                    await joinRoom(sockets[user.id], channel);
+
+                    sockets[user.id].emit('newChannel', {
                         id: channel.id,
                         name: channel.name,
                         icon: channel.icon,
                         public: channel.public,
                         members: channel.members
                     });
-
-                    joinRoom(sockets[user.id], channel);
                 }
             } catch (err) {
                 console.log(err);
@@ -78,10 +82,10 @@ module.exports = (io) => {
 };
 
 
-function joinRoom(socket, channel) {
-    if (socket) {
+async function joinRoom(socket, channel) {
+    if (socket && channel) {
         onlineUsers[channel.id].add(socket.user.id);
-        socket.join(channel.id);
+        await socket.join(channel.id);
         socket.broadcast.emit('newMember', {
             channel: channel.id,
             member: { id: socket.user.id }
@@ -89,12 +93,12 @@ function joinRoom(socket, channel) {
     }
 }
 
-function leaveRoom(socket, channel) {
-    if (socket) {
+async function leaveRoom(socket, channel) {
+    if (socket && channel) {
         onlineUsers[channel.id].delete(socket.user.id);
-        socket.leave(channel.id);
+        await socket.leave(channel.id);
         if (channel.public) {
-            socket.io.emit('removeMember', {
+            socket.server.emit('removeMember', {
                 channel: channel.id,
                 member: { id: socket.user.id }
             });
